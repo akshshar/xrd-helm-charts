@@ -1,7 +1,7 @@
 # XRd Helm charts
 
-This repository contains sample Helm charts](https://helm.sh/) for running XRd
-using Kubernetes as an aid to the blog posted @ https://xrdocs.io/virtual-routing
+This repository contains [Sample Helm charts](https://helm.sh/) to help run XRd
+on Kubernetes. These charts serve as an aid to the blogs posted @ https://xrdocs.io/virtual-routing
 
 ## Usage
 
