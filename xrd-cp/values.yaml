@@ -1,0 +1,8 @@
+xrd-cp:
+  platform: ControlPlane
+
+  nodeSelector:
+      xrd-test-node: worker1
+
+settings:
+  XR_MGMT_INTERFACES: "linux:eth0,chksum"

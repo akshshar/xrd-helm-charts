@@ -1,0 +1,30 @@
+{
+  "$schema": "http://json-schema.org/draft/2020-12/schema",
+  "$id": "http://cisco.com/xrd/helm",
+  "title": "XRd Helm Chart Values",
+  "description": "Configuration values for XRd helm charts",
+  "type": "object",
+  "properties": {
+    "networks": {
+      "description": "Multus networks",
+      "type": "array",
+      "items": {
+      "type": "object",
+      "properties": {
+          "name": {
+          "description": "Name of the network",
+          "type": "string"
+          },
+          "master": {
+          "description": "Interface on the worker node to bridge to",
+          "type": "string"
+          },
+          "ip": {
+          "description": "IP address to use for the interface in the k8s network",
+          "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

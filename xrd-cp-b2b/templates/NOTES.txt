@@ -1,0 +1,4 @@
+XRd test application.
+
+Creates two XRd deployments, one using XRd Control Plane, and one using
+XRd vRouter.

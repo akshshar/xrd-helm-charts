@@ -1,0 +1,163 @@
+# Default values for xrd-test.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+# Network settings for multus.
+# These settings are used to create multus network attachment definitions and
+# pod network annotations. These bridge interfaces on the worker node
+# into the pod using macvlan mode.
+# This is a list of network definitions.
+networks:
+  # Name of the network. This must be unique for each entry.
+- name: cp1-mgmt
+  # Master interface for the network - which linux interface to
+  # bridge into the pod.
+  master: ens161
+  # IP address to assign to the bridge interface in the pod.
+  ip: 100.0.0.1/24
+- name: cp2-mgmt
+  master: ens161
+  ip: 100.0.0.2/24
+- name: cp1-link1
+  master: ens162
+  ip: 10.0.0.1/24
+- name: cp2-link1
+  master: ens162
+  ip: 10.0.0.2/24
+- name: cp1-link2
+  master: ens162
+  ip: 11.0.0.1/24
+- name: cp2-link2
+  master: ens162
+  ip: 11.0.0.2/24
+
+xrd-cp1:
+  platform: ControlPlane
+
+  nodeSelector:
+    xrd-test-node: worker1
+
+  annotations:
+    k8s.v1.cni.cncf.io/networks: |-
+      [
+        {"name": "cp1-mgmt", "ips": ["100.0.0.1/24"]},
+        {"name": "cp1-link1", "ips": ["10.0.0.1/24"]},
+        {"name": "cp1-link2", "ips": ["11.0.0.1/24"]}
+      ]
+
+  config:
+    ascii: |
+      hostname xrd-cp1
+      logging console debugging
+      logging monitor debugging
+      username cisco
+       group root-lr
+       group cisco-support
+       secret 10 $6$l5HjM1lo9qxWBM1.$6N6UFG9aK6J8g6JngfO9WRUuhgT366SYyMjSyhlEsL0xRQOql8mrdb2nJJ3UC4L9uuNJOEExXQe1d1m1HKNKT1
+      !
+      interface Loopback0
+       ipv4 address 1.1.1.1 255.255.255.255
+      !
+      interface GigabitEthernet0/0/0/0
+       ipv4 address 10.0.0.1 255.255.255.0
+      !
+      interface GigabitEthernet0/0/0/1
+       ipv4 address 11.0.0.1 255.255.255.0
+      !
+      interface MgmtEth0/RP0/CPU0/0
+       ipv4 address 100.0.0.1 255.255.255.0
+      !
+      !
+      router ospf 100
+       area 0
+        interface loopback0
+        interface GigabitEthernet0/0/0/0
+        interface GigabitEthernet0/0/0/1
+        !
+       !
+      !
+      router bgp 100
+       bgp router-id 1.1.1.1
+       bgp update-delay 0
+       address-family ipv4 unicast
+        redistribute connected
+       !
+       neighbor 1.1.1.2
+        remote-as 100
+        update-source loopback0
+        address-family ipv4 unicast
+        !
+       !
+      !
+      ssh server vrf default
+    asciiEveryBoot: true
+
+  settings:
+    XR_INTERFACES: "linux:net2;linux:net3"
+    XR_MGMT_INTERFACES: "linux:net1"
+
+
+xrd-cp2:
+  platform: ControlPlane
+
+  nodeSelector:
+    xrd-test-node: worker1
+
+  annotations:
+    k8s.v1.cni.cncf.io/networks: |-
+      [
+        {"name": "cp2-mgmt", "ips": ["100.0.0.2/24"]},
+        {"name": "cp2-link1", "ips": ["10.0.0.2/24"]},
+        {"name": "cp2-link2", "ips": ["11.0.0.2/24"]}
+      ]
+
+  config:
+    ascii: |
+      hostname xrd-cp2
+      logging console debugging
+      logging monitor debugging
+      username cisco
+       group root-lr
+       group cisco-support
+       secret 10 $6$l5HjM1lo9qxWBM1.$6N6UFG9aK6J8g6JngfO9WRUuhgT366SYyMjSyhlEsL0xRQOql8mrdb2nJJ3UC4L9uuNJOEExXQe1d1m1HKNKT1
+      !
+      interface Loopback0
+       ipv4 address 1.1.1.2 255.255.255.0
+      !
+      interface GigabitEthernet0/0/0/0
+       ipv4 address 10.0.0.2 255.255.255.0
+      !
+      interface GigabitEthernet0/0/0/1
+       ipv4 address 11.0.0.2 255.255.255.0
+      !
+      interface MgmtEth0/RP0/CPU0/0
+       ipv4 address 100.0.0.2 255.255.255.0
+      !
+      !
+      router ospf 100
+       area 0
+        interface loopback0 
+        interface GigabitEthernet0/0/0/0
+        interface GigabitEthernet0/0/0/1
+        !
+       !
+      !
+      router bgp 100
+       bgp router-id 1.1.1.2
+       bgp update-delay 0
+       address-family ipv4 unicast
+        redistribute connected
+       !
+       neighbor 1.1.1.1
+        remote-as 100
+        update-source loopback0
+        address-family ipv4 unicast
+        !
+       !
+      !
+      ssh server vrf default
+    asciiEveryBoot: true
+
+  settings:
+    XR_INTERFACES: "linux:net2;linux:net3"
+    XR_MGMT_INTERFACES: "linux:net1"

@@ -1,0 +1,91 @@
+{{- $fullname := include "xrd.fullname" . -}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "xrd.fullname" . }}-deployment
+  labels:
+    {{- include "xrd.labels" . | nindent 4 }}
+spec:
+  replicas: 1
+  strategy:
+    type: "Recreate"
+  selector:
+    matchLabels:
+      app: {{ include "xrd.fullname" . }}
+  template:
+    metadata:
+      labels:
+        app: {{ include "xrd.fullname" . }}
+        {{- include "xrd.labels" . | nindent 8 }}
+      {{- with .Values.annotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+    spec:
+      volumes:
+      - name: config
+        configMap:
+          name: {{ include "xrd.fullname" . }}-config
+      {{- if include "xrd.storageEnabled" . }}
+      - name: xr-storage
+        persistentVolumeClaim:
+          claimName: {{ include "xrd.storagePersistClaimName" . }}
+      {{- end }}
+      {{- range $name, $mount := .Values.hostMounts }}
+      - name: {{ $fullname }}-hostmount-{{ $name }}
+        hostPath:
+          path: {{ $mount.hostPath | quote }}
+          {{- if $mount.create }}
+          type: DirectoryOrCreate
+          {{- else }}
+          type: Directory
+          {{- end }}
+      {{- end }}
+      containers:
+      {{- $repo := include "xrd.repository" . }}
+      {{- $tag := .Values.image.tag | default .Chart.AppVersion }}
+      - image: {{ printf "\"%s:%s\"" $repo $tag }}
+        {{- $resources := include "xrd.resources" . }}
+        {{- if $resources }}
+        {{- $resources | nindent 8 }}
+        {{- end }}
+        name: main
+        securityContext:
+        {{- toYaml .Values.securityContext | nindent 10 }}
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        tty: true
+        stdin: true
+        envFrom:
+        - configMapRef:
+            name: {{ include "xrd.fullname" . }}-settings
+        volumeMounts:
+        - mountPath: /etc/xrd
+          name: config
+          readOnly: true
+        {{- if include "xrd.storageEnabled" . }}
+        - mountPath: /xr-storage
+          name: xr-storage
+        {{- end }}
+        {{- range $name, $mount := .Values.hostMounts }}
+        - mountPath: {{ $mount.mountPath | default $mount.hostPath }}
+          name: {{ $fullname }}-hostmount-{{ $name }}
+        {{- end }}
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.podSpecExtra }}
+      {{- toYaml . | nindent 6 }}
+      {{- end }}

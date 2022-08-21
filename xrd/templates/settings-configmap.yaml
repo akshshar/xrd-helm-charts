@@ -1,0 +1,34 @@
+{{- define "xrd.settings" -}}
+{{- /* Put this before the specified values so it can be overridden. */ -}}
+{{- if eq .Values.platform "vRouter" -}}
+{{- $hugepages := (include "xrd.hugepages" .) -}}
+XR_VROUTER_DP_HUGEPAGE_MB: {{ include "xrd.toMiB" $hugepages | quote }}
+{{ end }}
+{{- /* Exclude keys which have an empty value to avoid setting the env-var */ -}}
+{{- range $k, $v := .Values.settings }}
+{{- if $v -}}
+{{ $k }}: "{{ $v }}"
+{{ end }}
+{{- end }}
+{{- with .Values.config }}
+{{- if .ascii }}
+{{- $env := ternary "XR_EVERY_BOOT_CONFIG" "XR_FIRST_BOOT_CONFIG" .asciiEveryBoot -}}
+{{ $env }}: "/etc/xrd/startup.cfg"
+{{ end }}
+{{- if .script }}
+{{- $env := ternary "XR_EVERY_BOOT_SCRIPT" "XR_FIRST_BOOT_SCRIPT" .scriptEveryBoot -}}
+{{ $env }}: "/etc/xrd/startup.sh"
+{{ end }}
+{{- end }}
+{{- end -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "xrd.fullname" . }}-settings
+{{- $settings := include "xrd.settings" . }}
+{{- if $settings }}
+data:
+{{ $settings | indent 2 }}
+{{- else }}
+data: {}
+{{- end }}

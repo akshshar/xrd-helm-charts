@@ -1,0 +1,16 @@
+{{- if include "xrd.storageEnabled" . -}}
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: {{ include "xrd.storagePersistName" . }}
+  labels:
+    {{- include "xrd.labels" . | nindent 4 }}
+spec:
+  storageClassName: "manual"
+  capacity:
+    storage: {{ include "xrd.storageSize" . }}
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: {{ include "xrd.storagePath" . }}
+{{- end -}}

@@ -1,0 +1,146 @@
+{
+  "$schema": "http://json-schema.org/draft/2020-12/schema",
+  "$id": "http://cisco.com/xrd/helm",
+  "title": "XRd Helm Chart Values",
+  "description": "Configuration values for XRd helm charts",
+  "type": "object",
+  "properties": {
+    "platform": {
+      "description": "Which XRd platform is being run (Control Plane or vRouter)",
+      "type": "string",
+      "enum": ["ControlPlane", "vRouter"]
+    },
+    "image": {
+      "description": "Container image config",
+      "type": "object",
+      "properties": {
+        "repository": {
+          "description": "Repository to pull the image from",
+          "type": "string"
+        },
+        "tag": {
+          "description": "Image tag to pull from the repository. Defaults to the Helm chart appVersion",
+          "type": "string",
+          "default": "latestz"
+        },
+        "pullPolicy": {
+          "description": "Standard Kubernetes image pull policy",
+          "type": "string",
+          "default": "Always",
+          "enum": ["Always", "IfNotPresent", "Never"]
+        }
+      },
+      "additionalProperties": false
+    },
+    "resources": {
+      "description": "Standard Kubernetes container resources object",
+      "type": "object"
+    },
+    "securityContext": {
+      "description": "Standard Kubernetes container securityContext object",
+      "type": "object"
+    },
+    "imagePullSecrets": {
+      "description": "Standard Kuberenetes pod imagePullSecrets array",
+      "type": "array"
+    },
+    "nodeSelector": {
+      "description": "Standard Kubernetes pod nodeSelector object",
+      "type": "object"
+    },
+    "tolerations": {
+      "description": "Standard Kubernetes pod tolerations array",
+      "type": "array"
+    },
+    "affinity": {
+      "description": "Standard Kubernetes pod affinity object",
+      "type": "object"
+    },
+    "config": {
+      "description": "XRd configuration",
+      "type": "object",
+      "properties": {
+        "ascii": {
+          "description": "ASCII XR configuration",
+          "type": "string"
+        },
+        "asciiEveryBoot": {
+          "description": "Flag indicating if the ASCII configuration should be applied on every boot (True), or just first boot (False) (requried if 'ascii' is specifed)",
+          "type": "boolean"
+        },
+        "script": {
+          "description": "XR boot script contents",
+          "type": "string"
+        },
+        "scriptEveryBoot": {
+          "description": "Flag indicating if the boot script should be run on every boot (True), or just first boot (False) (required if 'script' is specified)",
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false,
+      "dependencies": {
+        "ascii": {
+          "required": [
+            "asciiEveryBoot"
+          ]
+        },
+        "script": {
+          "required": [
+            "scriptEveryBoot"
+          ]
+        }
+      }
+    },
+    "storage": {
+      "description": "Persistent storage settings",
+      "type": "object",
+      "properties": {
+        "pathOverride": {
+          "description": "Path to mount the persistent storage at",
+          "type": "string",
+          "default": "/xr-storage"
+        },
+        "size": {
+          "description": "Size of the persistent storage volument",
+          "type": "string",
+          "default": "5Gi"
+        },
+        "disable": {
+          "description": "Disable persistent storage",
+          "type": "boolean",
+          "default": "false"
+        }
+      },
+      "additionalProperties": false
+    },
+    "settings": {
+      "description": "XRd settings",
+      "$comment": "Don't police here as all internal env vars",
+      "type": "object"
+    },
+    "hostMounts": {
+      "description": "Set of host directories to mount in the container",
+      "type": "object",
+      "additionalProperties": {
+        "description": "Information for a single host mount",
+        "properties": {
+          "hostPath": {
+            "description": "Path on the host to mount in the container",
+            "type": "string"
+          },
+          "mountPath": {
+            "description": "Path in the container mount the host directory",
+            "type": "string"
+          },
+          "create": {
+            "description": "Flag indicating whether or not to create the directory if it's missing on the host",
+            "type": "boolean",
+            "default": "false"
+          }
+        },
+        "required": ["hostPath"]
+      }
+    }
+  },
+  "required": ["platform", "image"]
+}

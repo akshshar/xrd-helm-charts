@@ -1,0 +1,1 @@
+Add templated notes for XRd application.

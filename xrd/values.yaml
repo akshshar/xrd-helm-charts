@@ -1,0 +1,121 @@
+# Default values for XRd.
+
+# Which XRd platform is being run.
+# This must either be 'ControlPlane' or 'vRouter'.
+platform: ControlPlane
+
+# Image configuration
+image:
+  # The repository to use the pull the image.
+  # This may be left unset, and the default is controlled by the platform:
+  #  - Control Plane uses localhost:5000/xrd-control-plane
+  #  - vRouter uses localhost:5000/xrd-vrouter
+  #repository: localhost:5000/xrd-control-plane
+  # Pull policy for images.
+  # One of "IfNotPresent", "Always", or "Never"
+  # See https://kubernetes.io/docs/concepts/containers/images/#image-pull-policy
+  pullPolicy: Always
+  # Image tag override. By default will use the appVersion from Chart.yaml
+  #tag: ""
+
+# Resource configuration.
+# This is just standard K8s configuration, more detail available here:
+# https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
+# The default resources are set by the XRd platform:
+#  - Control Plane specifies no default resources.
+#  - vRouter sets limits (and requests) of:
+#    - 5Gi memory (unless a memory request and/or limit is specified here)
+#    - 3Gi hugepages-1Gi (unless _any_ hugepage request and/or limit is specified here)
+#resources:
+#  limits:
+#    cpu: 100m
+#    memory: 5Gi
+#    hugepages-2Mi: 3Gi
+#    hugepages-1Gi: 3Gi
+#  requests:
+#    cpu: 100m
+#    memory: 5Gi
+#    hugepages-2Mi: 3Gi
+#    hugepages-1Gi: 3Gi
+
+# Security context for the XRd container.
+# Privileged mode is currently required for XRd in K8s due to device
+# access requirements.
+securityContext:
+  privileged: true
+
+# Image pull secrets for the XRd pod.
+# When pulling from a registry that requires authentication, secrets must be added to K8s.
+# See the link below for more details and an example:
+# https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
+#imagePullSecrets:
+#  - name: ""
+
+# Location control for the XRd pod.
+# Standard K8s configuration, more information available at:
+# https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/
+#nodeSelector: {}
+#tolerations: []
+#affinity: {}
+
+# Annotations added to the XRd pod verbatim
+#annotations:
+
+# Persistent storage controls.
+#storage:
+#  Path on the host where the persistent storage is mounted.
+#  By default this is a path under /var/run that is unique for each
+#  helm installtion.
+#  pathOverride: ""
+#  Size of the mount (default 5Gi).
+#  size: ""
+#  Disable persistent storage.
+#  disabled: true
+
+# XR configuration and boots scripts.
+#config:
+  # ASCII XR configuration to be applied on XR boot.
+  #ascii: ""
+  # Flag indictaing when the above configuration should be applied:
+  #  - False indicates only on first boot.
+  #  - True indicates on every boot.x
+  #asciiEveryBoot: False
+  # Script to run on XR boot.
+  #script: ""
+  # Flag indicating when the above script should be run:
+  #  - False indicates only on first boot.
+  #  - True indicates on every boot.
+  #scriptEveryBoot: False
+
+# XRd settings.
+# These are passed through as environment variables to the container.
+settings:
+  # Interface specification.
+  XR_INTERFACES: ""
+  # Management interface specification.
+  XR_MGMT_INTERFACES: ""
+  # Which CPU cores to run dataplane packet threads on.
+  # CPU sets are specified as a comma-separated list of indices or
+  #index ranges, e.g.:
+  #  - "0-3",
+  #  - "0,4"
+  #  - "0,1,5-6"
+  #XR_VROUTER_DP_CPUSET: ""
+  # Which CPU cores to avoid assigning process to automatically.
+  # Processes can be assigned to these cores manually by further configuration.
+  #XR_VROUTER_CPUSET_AVOID: ""
+
+# Host path mounts
+# This is an object where the key is used as an internal-only name for the
+# mount to ensure uniqueness, and the values are as described below.
+#hostMounts:
+  # Unique name.
+  #one:
+    # Path from the host to mount in the container (required)
+    #hostPath: /path/to/mount/from/host
+    # Path to use as the mount point in the container (defaults to the same
+    # as the hostPath).
+    #mountPath: /path/to/container/mount/point
+    # Flag indicating whether or not to create the directory if it doesn't
+    # exist at container start (default false).
+    #create: false

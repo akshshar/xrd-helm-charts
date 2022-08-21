@@ -1,0 +1,13 @@
+xrd-vrouter:
+  platform: vRouter
+
+  nodeSelector:
+      xrd-test-node: worker2
+
+  # XRd settings.
+  # These are passed through as environment variables to the container.
+  settings:
+    # Interface specification.
+    XR_INTERFACES: "pci:0b:00.0;pci:0c:00.0;pci:0d:00.0"
+    # Management interface specification.
+    XR_MGMT_INTERFACES: "linux:eth0,chksum"
